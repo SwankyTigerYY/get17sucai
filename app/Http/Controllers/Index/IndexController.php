@@ -106,7 +106,7 @@ class IndexController extends Controller
                 }
                 //匹配JS文件
                 if (isset($match_css_result)) {
-                    foreach ($match_js[1] as $k => $v) {
+                    foreach ($match_css_result as $k => $v) {
                         if (isset(get_headers($url . $v, true)[0]) && (strpos(get_headers($url . $v, true)[0], '200') || strpos(get_headers($url . $v, true)[0], '304'))) {
                             $content_js = file_get_contents($url . $v);
                         } else {
@@ -126,7 +126,7 @@ class IndexController extends Controller
                 }
                 //匹配img文件
                 if (isset($match_img_result)) {
-                    foreach ($match_img[1] as $k => $v) {
+                    foreach ($match_img_result as $k => $v) {
                         self::file_exists_S3($url, $v, $filepath);
                     }
                 }
