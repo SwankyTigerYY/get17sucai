@@ -61,8 +61,8 @@ class IndexController extends Controller
                 preg_match_all($pattern_img_ext, $html, $match_img_ext);
                 $match_img_result = array_merge($match_img[1]??array(), $match_img_ext[1]??array());
                 //匹配css文件
-                if (isset($match_js_result)) {
-                    foreach ($match_js_result as $k => $v) {
+                if (isset($match_css_result)) {
+                    foreach ($match_css_result as $k => $v) {
                         //
                         if (isset(get_headers($url . $v, true)[0]) && (strpos(get_headers($url . $v, true)[0], '200') || strpos(get_headers($url . $v, true)[0], '304'))) {
                             $content_css = file_get_contents($url . $v);
@@ -105,8 +105,8 @@ class IndexController extends Controller
                     }
                 }
                 //匹配JS文件
-                if (isset($match_css_result)) {
-                    foreach ($match_css_result as $k => $v) {
+                if (isset($match_js_result)) {
+                    foreach ($match_js_result as $k => $v) {
                         if (isset(get_headers($url . $v, true)[0]) && (strpos(get_headers($url . $v, true)[0], '200') || strpos(get_headers($url . $v, true)[0], '304'))) {
                             $content_js = file_get_contents($url . $v);
                         } else {
