@@ -23,6 +23,8 @@
 		<meta name="x5-fullscreen" content="true">
 		<!--QQ强制全屏-->
 		<meta name="x5-page-mode" content="app">
+		<!--CSRF-->
+		<meta name="csrf-token" content="{{ csrf_token() }}">
 		<!--QQ应用模式-->
 		<link href="{{ URL::asset('search/font/embed.css') }}" rel="stylesheet">
 		<link href="{{ URL::asset('search/css/style.min.css') }}" rel="stylesheet">
@@ -34,7 +36,7 @@
 		<link rel="stylesheet" href="{{ URL::asset('search/css/search.min.css') }}" />
 		<!-- 百度统计 -->
 		<script>
-			console.log('%chttp://www.yunziyuan.com.cn/','color: yellow; background: red; font-size: 24px;font-size:100px')
+			// console.log('%chttp://www.yunziyuan.com.cn/','color: yellow; background: red; font-size: 24px;font-size:100px')
       </script>
 
 	</head>

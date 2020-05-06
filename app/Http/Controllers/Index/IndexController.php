@@ -29,7 +29,7 @@ class IndexController extends Controller
                 $url = str_replace("index.html", "", $request->post('url'));
                 //判断是否有参数
                 if (empty($url)) {
-                    echo "<html><head><style>html,body{padding: 0;margin: 0;width: 100%;height: 100%;}body{display: flex;align-items: center;justify-content: center;}</style></head><body><div class=\"div\"><a href='javascript:history.back(-1)'>没有输入网址，点击返回上一页</a></div></body></html>";
+                    echo "<html><head><style>html,body{padding: 0;margin: 0;width: 100%;height: 100%;}body{display: flex;align-items: center;justify-content: center;}</style></head><body><div class=\"div\"><a href='javascript:history.back(-1)'>没有输入正确网址，点击返回上一页</a></div></body></html>";
                     exit;
                 }
                 //获取index内容
@@ -37,6 +37,11 @@ class IndexController extends Controller
                     "verify" => false
                 ]);
                 $html = $response->getBody()->getContents();
+                //判断是否有内容
+                if (empty($html)) {
+                    echo "<html><head><style>html,body{padding: 0;margin: 0;width: 100%;height: 100%;}body{display: flex;align-items: center;justify-content: center;}</style></head><body><div class=\"div\"><a href='javascript:history.back(-1)'>没有获取到网页内容，点击返回上一页</a></div></body></html>";
+                    exit;
+                }
                 //创建文件夹
                 $filepath = public_path() . "\\moban\\" . date("YmdH" . str_pad(mt_rand(0, 9999), 4, "0", STR_PAD_LEFT), time()) . "\\";
                 !is_dir($filepath) ? mkdir($filepath, 0777, true) : null;
