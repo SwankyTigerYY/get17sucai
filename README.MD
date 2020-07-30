@@ -1,8 +1,13 @@
 **使用的laravel框架**   
+
 安装方法
+
 1，复制.env.example修改为.env
+
 2，执行php artisan key:generate
+
 3，执行composer install
+
 使用方法  
 1，从17素材找到想下载的单页资料F12找到iframe中的真实地址（按两下F12，第一次会有alert弹窗）。
 
