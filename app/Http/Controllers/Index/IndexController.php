@@ -26,14 +26,15 @@ class IndexController extends Controller
             try {
                 $client = new Client();
                 //"https://www.17sucai.com/preview/806169/2020-03-11/车辆大数据展示平台/index.html";
-                $url = str_replace("index.html", "", $request->post('url'));
+                //$url = str_replace("index.html", "", $request->post('url'));
+                $url = $request->post('url');
                 //判断是否有参数
                 if (empty($url)) {
                     echo "<html><head><style>html,body{padding: 0;margin: 0;width: 100%;height: 100%;}body{display: flex;align-items: center;justify-content: center;}</style></head><body><div class=\"div\"><a href='javascript:history.back(-1)'>没有输入正确网址，点击返回上一页</a></div></body></html>";
                     exit;
                 }
                 //获取index内容
-                $response = $client->get($url . "/index.html", [
+                $response = $client->get($url, [
                     "verify" => false
                 ]);
                 $html = $response->getBody()->getContents();
@@ -56,18 +57,20 @@ class IndexController extends Controller
                 $pattern_img_ext = '/<img[^>]*?src=\'(.*?)\'[^>]*?>/si';
                 $css_src = '/src:[^>]*?url\((.*?)\)/si';
                 $css_background = '/background:[^>]*?url\((.*?)\)/si';
+                $css_background_image = '/background-image:[^>]*?url\((.*?)\)/si';
                 preg_match_all($pattern_js, $html, $match_js);
                 preg_match_all($pattern_js_ext, $html, $match_js_ext);
-                $match_js_result = array_merge($match_js[1]??array(), $match_js_ext[1]??array());
+                $match_js_result = array_merge($match_js[1] ?? array(), $match_js_ext[1] ?? array());
                 preg_match_all($pattern_css, $html, $match_css);
                 preg_match_all($pattern_css_ext, $html, $match_css_ext);
-                $match_css_result = array_merge($match_css[1]??array(), $match_css_ext[1]??array());
+                $match_css_result = array_merge($match_css[1] ?? array(), $match_css_ext[1] ?? array());
                 preg_match_all($pattern_img, $html, $match_img);
                 preg_match_all($pattern_img_ext, $html, $match_img_ext);
-                $match_img_result = array_merge($match_img[1]??array(), $match_img_ext[1]??array());
+                $match_img_result = array_merge($match_img[1] ?? array(), $match_img_ext[1] ?? array());
                 //匹配css文件
                 if (isset($match_css_result)) {
                     foreach ($match_css_result as $k => $v) {
+                        if (strstr($v, "http://") || strstr($v, "https://")) continue;
                         //
                         if (isset(get_headers($url . $v, true)[0]) && (strpos(get_headers($url . $v, true)[0], '200') || strpos(get_headers($url . $v, true)[0], '304'))) {
                             $content_css = file_get_contents($url . $v);
@@ -77,8 +80,10 @@ class IndexController extends Controller
                         //处理css中的文件
                         preg_match_all($css_src, $content_css, $css_src_result);
                         preg_match_all($css_background, $content_css, $css_background_result);
-                        if (isset($css_src_result[1])){
-                            foreach ($css_src_result[1] as $kk=>$vv){
+                        preg_match_all($css_background_image, $content_css, $css_background_image_result);
+                        //获取css文件中的src引用文件
+                        if (isset($css_src_result[1])) {
+                            foreach ($css_src_result[1] as $kk => $vv) {
                                 $cache_string = str_replace("'", "", $vv);
                                 $cache_string = str_replace("\"", "", $cache_string);
                                 $cache_string = str_replace("../", "", $cache_string);
@@ -87,8 +92,20 @@ class IndexController extends Controller
                                 }
                             }
                         }
-                        if (isset($css_background_result[1])){
-                            foreach ($css_background_result[1] as $kk=>$vv){
+                        //获取background引用的图片文件
+                        if (isset($css_background_result[1])) {
+                            foreach ($css_background_result[1] as $kk => $vv) {
+                                $cache_string = str_replace("'", "", $vv);
+                                $cache_string = str_replace("\"", "", $cache_string);
+                                $cache_string = str_replace("../", "", $cache_string);
+                                if (isset(get_headers($url . $cache_string, true)[0]) && (strpos(get_headers($url . $cache_string, true)[0], '200') || strpos(get_headers($url . $cache_string, true)[0], '304'))) {
+                                    self::file_exists_S3($url, $cache_string, $filepath);
+                                }
+                            }
+                        }
+                        //获取background-image引用的图片文件
+                        if (isset($css_background_image_result[1])) {
+                            foreach ($css_background_image_result[1] as $kk => $vv) {
                                 $cache_string = str_replace("'", "", $vv);
                                 $cache_string = str_replace("\"", "", $cache_string);
                                 $cache_string = str_replace("../", "", $cache_string);
@@ -112,6 +129,7 @@ class IndexController extends Controller
                 //匹配JS文件
                 if (isset($match_js_result)) {
                     foreach ($match_js_result as $k => $v) {
+                        if (strstr($v, "http://") || strstr($v, "https://")) continue;
                         if (isset(get_headers($url . $v, true)[0]) && (strpos(get_headers($url . $v, true)[0], '200') || strpos(get_headers($url . $v, true)[0], '304'))) {
                             $content_js = file_get_contents($url . $v);
                         } else {
@@ -132,6 +150,7 @@ class IndexController extends Controller
                 //匹配img文件
                 if (isset($match_img_result)) {
                     foreach ($match_img_result as $k => $v) {
+                        if (strstr($v, "http://") || strstr($v, "https://")) continue;
                         self::file_exists_S3($url, $v, $filepath);
                     }
                 }
